@@ -20,6 +20,13 @@ SEQUENCE_MODEL_EVALUATORS = [LSTM, VANILLA_BERT_LSTM, VANILLA_BERT_FEED_FORWARD,
 def evaluate_sequence_models(args):
     # Load the training data
     dataset = pd.read_parquet(args.sequence_model_data_path)
+    # Remove person duplicate
+    dataset = dataset.drop_duplicates('person_id', keep = False)
+    dataset = dataset[dataset.person_id.notnull()]
+    # Reindex
+    dataset.index = range(len(dataset))
+    pd.DataFrame(dataset).to_parquet(os.path.join(args.evaluation_folder, 'finalInputData.parquet'))
+    
     if LSTM in args.model_evaluators:
         validate_folder(args.time_attention_model_folder)
         time_attention_tokenizer_path = os.path.join(args.time_attention_model_folder,
